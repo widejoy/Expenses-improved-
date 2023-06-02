@@ -34,7 +34,9 @@ class _CategoryItemState extends State<CategoryItem> {
               width: 24,
               height: 24,
               color: groceryItems[index].category.itemcolor),
-          trailing: Text(groceryItems[index].quantity as String),
+          trailing: Text(
+            groceryItems[index].quantity.toString(),
+          ),
         ),
       ),
     );
