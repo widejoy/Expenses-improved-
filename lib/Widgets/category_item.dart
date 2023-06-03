@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:new_expense/Widgets/new_item.dart';
 import 'package:new_expense/data/dummy_items.dart';
 
+import '../models/grocery_item.dart';
+
 class CategoryItem extends StatefulWidget {
   const CategoryItem({super.key});
 
@@ -10,6 +12,7 @@ class CategoryItem extends StatefulWidget {
 }
 
 class _CategoryItemState extends State<CategoryItem> {
+  final List<GroceryItem> _groceryitems = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,25 +20,34 @@ class _CategoryItemState extends State<CategoryItem> {
         title: const Text('Your Groceries'),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const NewItem(),
-              ));
+            onPressed: () async {
+              final newitem = await Navigator.of(context).push<GroceryItem>(
+                MaterialPageRoute(
+                  builder: (context) => const NewItem(),
+                ),
+              );
+              if (newitem == null) {
+                return;
+              } else {
+                setState(() {
+                  _groceryitems.add(newitem);
+                });
+              }
             },
             icon: const Icon(Icons.add),
           ),
         ],
       ),
       body: ListView.builder(
-        itemCount: groceryItems.length,
+        itemCount: _groceryitems.length,
         itemBuilder: (context, index) => ListTile(
-          title: Text(groceryItems[index].name),
+          title: Text(_groceryitems[index].name),
           leading: Container(
               width: 24,
               height: 24,
-              color: groceryItems[index].category.itemcolor),
+              color: _groceryitems[index].category.itemcolor),
           trailing: Text(
-            groceryItems[index].quantity.toString(),
+            _groceryitems[index].quantity.toString(),
           ),
         ),
       ),
