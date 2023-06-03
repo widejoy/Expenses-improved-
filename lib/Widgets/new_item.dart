@@ -9,6 +9,8 @@ class NewItem extends StatefulWidget {
 }
 
 class _NewItemState extends State<NewItem> {
+  final _formkey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,6 +20,7 @@ class _NewItemState extends State<NewItem> {
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Form(
+          key: _formkey,
           child: Column(
             children: [
               TextFormField(
@@ -26,7 +29,13 @@ class _NewItemState extends State<NewItem> {
                   label: Text('Name'),
                 ),
                 validator: (value) {
-                  return '';
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.trim().length <= 3 ||
+                      value.trim().length > 50) {
+                    return 'Must be between 3 and 50 characters long';
+                  }
+                  return null;
                 },
               ),
               Row(
@@ -34,10 +43,20 @@ class _NewItemState extends State<NewItem> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         label: Text('Quantity'),
                       ),
                       initialValue: '1',
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null ||
+                            int.tryParse(value)! <= 0) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(
@@ -69,16 +88,23 @@ class _NewItemState extends State<NewItem> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12,),
+              const SizedBox(
+                height: 12,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _formkey.currentState!.reset();
+                    },
                     child: const Text('Reset'),
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _formkey.currentState!.validate();
+                      _formkey.currentState!.save();
+                    },
                     child: const Text('Add Item'),
                   )
                 ],
