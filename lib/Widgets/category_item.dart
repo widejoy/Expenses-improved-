@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:new_expense/Widgets/new_item.dart';
-import 'package:new_expense/data/dummy_items.dart';
 
 import '../models/grocery_item.dart';
 
@@ -14,19 +13,32 @@ class CategoryItem extends StatefulWidget {
 class _CategoryItemState extends State<CategoryItem> {
   final List<GroceryItem> _groceryitems = [];
 
+  void _removeitem(GroceryItem i) {
+    setState(() {
+      _groceryitems.remove(i);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget elements = ListView.builder(
       itemCount: _groceryitems.length,
-      itemBuilder: (context, index) => ListTile(
-        title: Text(_groceryitems[index].name),
-        leading: Container(
-            width: 24,
-            height: 24,
-            color: _groceryitems[index].category.itemcolor),
-        trailing: Text(
-          _groceryitems[index].quantity.toString(),
+      itemBuilder: (context, index) => Dismissible(
+        background: Container(
+          color: const Color.fromARGB(255, 234, 0, 0),
         ),
+        key: ValueKey(_groceryitems[index].id),
+        child: ListTile(
+          title: Text(_groceryitems[index].name),
+          leading: Container(
+              width: 24,
+              height: 24,
+              color: _groceryitems[index].category.itemcolor),
+          trailing: Text(
+            _groceryitems[index].quantity.toString(),
+          ),
+        ),
+        onDismissed: (direction) => _removeitem(_groceryitems[index]),
       ),
     );
     if (_groceryitems.isEmpty) {
