@@ -1,22 +1,49 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:new_expense/data/categories.dart';
-import 'package:new_expense/models/grocery_item.dart';
 import 'package:http/http.dart' as http;
+
+import 'package:new_expense/data/categories.dart';
+import 'package:new_expense/models/category.dart';
+import 'package:new_expense/models/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
 
   @override
-  State<NewItem> createState() => _NewItemState();
+  State<NewItem> createState() {
+    return _NewItemState();
+  }
 }
 
 class _NewItemState extends State<NewItem> {
-  final _formkey = GlobalKey<FormState>();
-  var _enteredname;
-  int? _enteredquantity;
-  var _enteredcategory = categories[Categories.vegetables];
+  final _formKey = GlobalKey<FormState>();
+  var _enteredName = '';
+  var _enteredQuantity = 1;
+  var _selectedCategory = categories[Categories.vegetables]!;
+
+  void _saveItem() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      final url = Uri.https(
+          'flutter-shopping-a1103-default-rtdb.firebaseio.com',
+          'shopping-list.json');
+      http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(
+          {
+            'name': _enteredName,
+            'quantity': _enteredQuantity,
+            'category': _selectedCategory.item,
+          },
+        ),
+      );
+      // Navigator.of(context).pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +54,7 @@ class _NewItemState extends State<NewItem> {
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Form(
-          key: _formkey,
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
@@ -38,116 +65,89 @@ class _NewItemState extends State<NewItem> {
                 validator: (value) {
                   if (value == null ||
                       value.isEmpty ||
-                      value.trim().length <= 3 ||
+                      value.trim().length <= 1 ||
                       value.trim().length > 50) {
-                    return 'Must be between 3 and 50 characters long';
+                    return 'Must be between 1 and 50 characters.';
                   }
                   return null;
                 },
-                onSaved: (newValue) {
-                  _enteredname = newValue;
+                onSaved: (value) {
+                  // if (value == null) {
+                  //   return;
+                  // }
+                  _enteredName = value!;
                 },
-              ),
+              ), // instead of TextField()
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: TextFormField(
-                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         label: Text('Quantity'),
                       ),
-                      initialValue: '1',
+                      keyboardType: TextInputType.number,
+                      initialValue: _enteredQuantity.toString(),
                       validator: (value) {
                         if (value == null ||
                             value.isEmpty ||
                             int.tryParse(value) == null ||
                             int.tryParse(value)! <= 0) {
-                          return 'Please enter a valid number';
+                          return 'Must be a valid, positive number.';
                         }
                         return null;
                       },
-                      onSaved: (newValue) =>
-                          _enteredquantity = int.parse(newValue!),
+                      onSaved: (value) {
+                        _enteredQuantity = int.parse(value!);
+                      },
                     ),
                   ),
-                  const SizedBox(
-                    width: 8,
-                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField(
-                      value: _enteredcategory,
+                      value: _selectedCategory,
                       items: [
-                        for (final i in categories.entries)
+                        for (final category in categories.entries)
                           DropdownMenuItem(
-                            value: i.value,
+                            value: category.value,
                             child: Row(
                               children: [
                                 Container(
                                   width: 16,
                                   height: 16,
-                                  color: i.value.itemcolor,
+                                  color: category.value.itemcolor,
                                 ),
-                                const SizedBox(
-                                  width: 6,
-                                ),
-                                Text(i.value.item)
+                                const SizedBox(width: 6),
+                                Text(category.value.item),
                               ],
                             ),
                           ),
                       ],
-                      onChanged: (values) {
+                      onChanged: (value) {
                         setState(() {
-                          _enteredcategory = values;
+                          _selectedCategory = value!;
                         });
                       },
                     ),
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 12,
-              ),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () {
-                      _formkey.currentState!.reset();
+                      _formKey.currentState!.reset();
                     },
                     child: const Text('Reset'),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      if (_formkey.currentState!.validate()) {
-                        _formkey.currentState!.save();
-                        final url = Uri.http(
-                            'flutter-shopping-a1103-default-rtdb.firebaseio.com',
-                            'shopping-list.json');
-                        http.post(
-                          url,
-                          headers: {'Content-type': 'application/json'},
-                          body: json.encode({
-                            'name':_enteredname,
-                            'quantity':_enteredquantity,
-                            'category':_enteredcategory?.item,
-                            
-                          }),
-                        );
-                        // Navigator.of(context).pop(
-                        //   GroceryItem(
-                        //     id: DateTime.now().toString(),
-                        //     name: _enteredname,
-                        //     category: _enteredcategory!,
-                        //     quantity: _enteredquantity!,
-                        //   ),
-                        // );
-                      }
-                    },
+                    onPressed: _saveItem,
                     child: const Text('Add Item'),
                   )
                 ],
-              )
+              ),
             ],
           ),
         ),
