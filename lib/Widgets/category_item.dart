@@ -22,6 +22,7 @@ class _CategoryItemState extends State<CategoryItem> {
   }
 
   List<GroceryItem> _groceryitems = [];
+  var isloading = true;
   void _loaditems() async {
     final url = Uri.https('flutter-shopping-a1103-default-rtdb.firebaseio.com',
         'shopping-list.json');
@@ -43,6 +44,7 @@ class _CategoryItemState extends State<CategoryItem> {
     }
     setState(() {
       _groceryitems = loadeditems;
+      isloading = false;
     });
   }
 
@@ -93,6 +95,12 @@ class _CategoryItemState extends State<CategoryItem> {
             ),
           );
         },
+      );
+    }
+    if (isloading) {
+      elements = const Center(
+        child: CircularProgressIndicator(
+            backgroundColor: Colors.blue, color: Colors.blueGrey),
       );
     }
     return Scaffold(
