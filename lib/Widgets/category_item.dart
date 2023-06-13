@@ -67,6 +67,26 @@ class _CategoryItemState extends State<CategoryItem> {
         ),
         key: ValueKey(_groceryitems[index].id),
         child: ListTile(
+          onTap: () async {
+            final newitem = await Navigator.of(context).push<GroceryItem>(
+              MaterialPageRoute(
+                builder: (context) => const NewItem(),
+              ),
+            );
+
+            if (newitem == null) {
+              return;
+            } else {
+              setState(() {
+                _groceryitems.add(newitem);
+              });
+            }
+            _groceryitems.remove(_groceryitems[index]);
+            final url = Uri.https(
+                'flutter-shopping-a1103-default-rtdb.firebaseio.com',
+                'shopping-list/${_groceryitems[index].id}.json');
+            http.delete(url);
+          },
           title: Text(_groceryitems[index].name),
           leading: Container(
               width: 24,
