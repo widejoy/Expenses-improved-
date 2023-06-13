@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:new_expense/Widgets/new_item.dart';
+import 'package:http/http.dart' as http;
+import 'package:new_expense/data/categories.dart';
 
 import '../models/grocery_item.dart';
 
@@ -11,7 +15,36 @@ class CategoryItem extends StatefulWidget {
 }
 
 class _CategoryItemState extends State<CategoryItem> {
-  final List<GroceryItem> _groceryitems = [];
+  @override
+  void initState() {
+    super.initState();
+    _loaditems();
+  }
+
+  List<GroceryItem> _groceryitems = [];
+  void _loaditems() async {
+    final url = Uri.https('flutter-shopping-a1103-default-rtdb.firebaseio.com',
+        'shopping-list.json');
+    final response = await http.get(url);
+    final Map<String, dynamic> listdata = json.decode(response.body);
+    final List<GroceryItem> loadeditems = [];
+    for (final i in listdata.entries) {
+      loadeditems.add(
+        GroceryItem(
+            id: i.key,
+            name: i.value["name"],
+            quantity: i.value["quantity"],
+            category: categories.entries
+                .firstWhere(
+                  (element) => element.value.item == i.value['category'],
+                )
+                .value),
+      );
+    }
+    setState(() {
+      _groceryitems = loadeditems;
+    });
+  }
 
   void _removeitem(GroceryItem i) {
     setState(() {
@@ -73,6 +106,7 @@ class _CategoryItemState extends State<CategoryItem> {
                     builder: (context) => const NewItem(),
                   ),
                 );
+
                 if (newitem == null) {
                   return;
                 } else {
