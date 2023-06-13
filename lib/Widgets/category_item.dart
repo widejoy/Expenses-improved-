@@ -49,6 +49,9 @@ class _CategoryItemState extends State<CategoryItem> {
   }
 
   void _removeitem(GroceryItem i) {
+    final url = Uri.https('flutter-shopping-a1103-default-rtdb.firebaseio.com',
+        'shopping-list/${i.id}.json');
+    http.delete(url);
     setState(() {
       _groceryitems.remove(i);
     });
@@ -103,6 +106,7 @@ class _CategoryItemState extends State<CategoryItem> {
             backgroundColor: Colors.blue, color: Colors.blueGrey),
       );
     }
+
     return Scaffold(
         appBar: AppBar(
           title: const Text('Your Groceries'),
