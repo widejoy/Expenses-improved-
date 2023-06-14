@@ -129,7 +129,48 @@ class _CategoryItemState extends State<CategoryItem> {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Your Groceries'),
+          title: Row(
+            children: [
+              const Text('Your Groceries'),
+              const SizedBox(
+                width: 38,
+              ),
+              DropdownButton(
+                items: [
+                  DropdownMenuItem(
+                    child: const Text("All"),
+                    onTap: () {
+                      setState(() {});
+                    },
+                  ),
+                  for (final i in categories.entries)
+                    DropdownMenuItem(
+                      onTap: () {
+                        setState(() {
+                          _groceryitems = _groceryitems
+                              .where((element) =>
+                                  element.category.item == i.value.item)
+                              .toList();
+                        });
+                      },
+                      value: i.value.item,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            color: i.value.itemcolor,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(i.value.item),
+                        ],
+                      ),
+                    )
+                ],
+                onChanged: (value) {},
+              ),
+            ],
+          ),
           actions: [
             IconButton(
               onPressed: () async {
