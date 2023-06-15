@@ -23,7 +23,9 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color.fromARGB(255, 50, 58, 60),
       ),
-      home: const CategoryItem(),
+      home: const CategoryItem(
+        key: ValueKey("hello"),
+      ),
     );
   }
 }

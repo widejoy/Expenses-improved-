@@ -59,8 +59,6 @@ class _CategoryItemState extends State<CategoryItem> {
 
   @override
   Widget build(BuildContext context) {
-    var _dummy = [..._groceryitems];
-
     Widget elements = ListView.builder(
       itemCount: _groceryitems.length,
       itemBuilder: (context, index) => Dismissible(
@@ -81,11 +79,9 @@ class _CategoryItemState extends State<CategoryItem> {
             } else {
               setState(() {
                 _groceryitems.add(newitem);
-                _dummy = [..._groceryitems];
               });
             }
             _groceryitems.remove(_groceryitems[index]);
-            _dummy = [..._groceryitems];
             final url = Uri.https(
                 'flutter-shopping-a1103-default-rtdb.firebaseio.com',
                 'shopping-list/${_groceryitems[index].id}.json');
@@ -104,7 +100,6 @@ class _CategoryItemState extends State<CategoryItem> {
           _removeitem(
             _groceryitems[index],
           );
-          _dummy = [..._groceryitems];
         },
       ),
     );
