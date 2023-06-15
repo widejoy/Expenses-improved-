@@ -59,6 +59,8 @@ class _CategoryItemState extends State<CategoryItem> {
 
   @override
   Widget build(BuildContext context) {
+    var _dummy = [..._groceryitems];
+
     Widget elements = ListView.builder(
       itemCount: _groceryitems.length,
       itemBuilder: (context, index) => Dismissible(
@@ -79,9 +81,11 @@ class _CategoryItemState extends State<CategoryItem> {
             } else {
               setState(() {
                 _groceryitems.add(newitem);
+                _dummy = [..._groceryitems];
               });
             }
             _groceryitems.remove(_groceryitems[index]);
+            _dummy = [..._groceryitems];
             final url = Uri.https(
                 'flutter-shopping-a1103-default-rtdb.firebaseio.com',
                 'shopping-list/${_groceryitems[index].id}.json');
@@ -96,7 +100,12 @@ class _CategoryItemState extends State<CategoryItem> {
             _groceryitems[index].quantity.toString(),
           ),
         ),
-        onDismissed: (direction) => _removeitem(_groceryitems[index]),
+        onDismissed: (direction) {
+          _removeitem(
+            _groceryitems[index],
+          );
+          _dummy = [..._groceryitems];
+        },
       ),
     );
     if (_groceryitems.isEmpty) {
@@ -139,13 +148,70 @@ class _CategoryItemState extends State<CategoryItem> {
                 items: [
                   DropdownMenuItem(
                     child: const Text("All"),
-                    onTap: () {
-                      setState(() {});
+                    onTap: () async {
+                      setState(() {
+                        isloading = true;
+                      });
+                      final url = Uri.https(
+                          'flutter-shopping-a1103-default-rtdb.firebaseio.com',
+                          'shopping-list.json');
+                      final response = await http.get(url);
+                      final Map<String, dynamic> listdata =
+                          json.decode(response.body);
+                      final List<GroceryItem> loadeditems = [];
+                      for (final i in listdata.entries) {
+                        loadeditems.add(
+                          GroceryItem(
+                              id: i.key,
+                              name: i.value["name"],
+                              quantity: i.value["quantity"],
+                              category: categories.entries
+                                  .firstWhere(
+                                    (element) =>
+                                        element.value.item ==
+                                        i.value['category'],
+                                  )
+                                  .value),
+                        );
+                      }
+                      setState(() {
+                        _groceryitems = loadeditems;
+                        isloading = false;
+                      });
                     },
                   ),
                   for (final i in categories.entries)
                     DropdownMenuItem(
-                      onTap: () {
+                      onTap: () async {
+                        setState(() {
+                          isloading = true;
+                        });
+                        final url = Uri.https(
+                            'flutter-shopping-a1103-default-rtdb.firebaseio.com',
+                            'shopping-list.json');
+                        final response = await http.get(url);
+                        final Map<String, dynamic> listdata =
+                            json.decode(response.body);
+                        final List<GroceryItem> loadeditems = [];
+                        for (final i in listdata.entries) {
+                          loadeditems.add(
+                            GroceryItem(
+                                id: i.key,
+                                name: i.value["name"],
+                                quantity: i.value["quantity"],
+                                category: categories.entries
+                                    .firstWhere(
+                                      (element) =>
+                                          element.value.item ==
+                                          i.value['category'],
+                                    )
+                                    .value),
+                          );
+                        }
+                        setState(() {
+                          _groceryitems = loadeditems;
+                          isloading = false;
+                        });
                         setState(() {
                           _groceryitems = _groceryitems
                               .where((element) =>
