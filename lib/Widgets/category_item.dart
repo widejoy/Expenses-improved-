@@ -21,6 +21,7 @@ class _CategoryItemState extends State<CategoryItem> {
     _loaditems();
   }
 
+  var _selectedCategory;
   List<GroceryItem> _groceryitems = [];
   var isloading = true;
   void _loaditems() async {
@@ -130,7 +131,6 @@ class _CategoryItemState extends State<CategoryItem> {
             backgroundColor: Colors.blue, color: Colors.blueGrey),
       );
     }
-
     return Scaffold(
         appBar: AppBar(
           title: Row(
@@ -140,6 +140,7 @@ class _CategoryItemState extends State<CategoryItem> {
                 width: 38,
               ),
               DropdownButton(
+                value: _selectedCategory,
                 items: [
                   DropdownMenuItem(
                     child: const Text("All"),
@@ -169,6 +170,7 @@ class _CategoryItemState extends State<CategoryItem> {
                                   .value),
                         );
                       }
+
                       setState(() {
                         _groceryitems = loadeditems;
                         isloading = false;
@@ -178,6 +180,7 @@ class _CategoryItemState extends State<CategoryItem> {
                   for (final i in categories.entries)
                     DropdownMenuItem(
                       onTap: () async {
+                        _selectedCategory = i.value;
                         setState(() {
                           isloading = true;
                         });
@@ -188,17 +191,17 @@ class _CategoryItemState extends State<CategoryItem> {
                         final Map<String, dynamic> listdata =
                             json.decode(response.body);
                         final List<GroceryItem> loadeditems = [];
-                        for (final i in listdata.entries) {
+                        for (final item in listdata.entries) {
                           loadeditems.add(
                             GroceryItem(
-                                id: i.key,
-                                name: i.value["name"],
-                                quantity: i.value["quantity"],
+                                id: item.key,
+                                name: item.value["name"],
+                                quantity: item.value["quantity"],
                                 category: categories.entries
                                     .firstWhere(
                                       (element) =>
                                           element.value.item ==
-                                          i.value['category'],
+                                          item.value['category'],
                                     )
                                     .value),
                           );
@@ -208,10 +211,9 @@ class _CategoryItemState extends State<CategoryItem> {
                           isloading = false;
                         });
                         setState(() {
-                          _groceryitems = _groceryitems
-                              .where((element) =>
-                                  element.category.item == i.value.item)
-                              .toList();
+                          _groceryitems = _groceryitems.where((element) {
+                            return element.category.item == i.value.item;
+                          }).toList();
                         });
                       },
                       value: i.value.item,
@@ -228,7 +230,9 @@ class _CategoryItemState extends State<CategoryItem> {
                       ),
                     )
                 ],
-                onChanged: (value) {},
+                onChanged: (value) {
+                  _selectedCategory = value;
+                },
               ),
             ],
           ),
