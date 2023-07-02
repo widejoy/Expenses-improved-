@@ -1,8 +1,7 @@
 import 'dart:convert';
-
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:new_expense/data/categories.dart';
 import 'package:new_expense/models/grocery_item.dart';
 
@@ -23,6 +22,10 @@ class _NewItemState extends State<NewItem> {
   var _issending = false;
 
   void _saveItem() async {
+    final key = encrypt.Key.fromLength(32);
+    final iv = encrypt.IV.fromLength(16);
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() {
@@ -31,6 +34,12 @@ class _NewItemState extends State<NewItem> {
       final url = Uri.https(
           'flutter-shopping-a1103-default-rtdb.firebaseio.com',
           'shopping-list.json');
+      var encryptedname = encrypter.encrypt(_enteredName, iv: iv).base16;
+      var encryptedquantity =
+          encrypter.encrypt(_enteredQuantity.toString(), iv: iv).base16;
+      var encryptercat =
+          encrypter.encrypt(_selectedCategory.item, iv: iv).base16;
+
       final respose = await http.post(
         url,
         headers: {
@@ -38,9 +47,9 @@ class _NewItemState extends State<NewItem> {
         },
         body: json.encode(
           {
-            'name': _enteredName,
-            'quantity': _enteredQuantity,
-            'category': _selectedCategory.item,
+            'name': encryptedname,
+            'quantity': encryptedquantity,
+            'category': encryptercat,
           },
         ),
       );

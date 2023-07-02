@@ -36,6 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^1.0.0
   shimmer: ^3.0.0
+  crypto: ^3.0.3
+  flutter_secure_storage: ^8.0.0
+  encrypt: ^5.0.1
 
 dev_dependencies:
   flutter_test:
